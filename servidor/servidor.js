@@ -1,6 +1,18 @@
 express = require('express');
 servidor = express();
 
+const nodemailer = require('nodemailer');
+
+const transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
+    auth: {
+        user: "luismarinho501@gmail.com",
+        pass: "emhp uhjl yswh powi"
+    }
+})
+
 const jwt = require('jsonwebtoken');
 
 const HOST = '192.168.0.77';
@@ -12,6 +24,7 @@ const byrypt = require('bcrypt');
 const sequelize = require('./models/db');
 const Usuario = require('./models/usuario');
 const Proprietario = require('./models/proprietario');
+const Codigo = require('./models/codigo');
 
 servidor.use(express.json());
 servidor.use(express.urlencoded({extended: true}));
@@ -131,6 +144,60 @@ servidor.get("/listar_proprietarios", verifyJWT, async function(req, res){
         res.status(500).send('Erro ao listar proprietarios');
     }
 });
+
+servidor.post("/recuperar_senha", async function(req,res){
+    await sequelize.sync
+    try {
+        const user = await Usuario.findOne({ where: { email: req.body.email } });
+        if(user){
+            const configEmail = {
+                from: "luismarinho501@gmail.com",
+                to: req.body.email,
+                subject: "Recuperação de senha",
+                html: "<p>Seu código de recuperação de senha é 51423</p>"
+            }
+            new Promise((resolve,reject) => {
+                transporter.sendMail(configEmail).then((res) => {
+
+                    cadastrar_codigo(51423,user.id)
+                    transporter.close();
+                    return resolve(res);
+
+                }).catch((error) => {
+                    console.log(error);
+                    transporter.close();
+                    return reject(error);
+                })
+            });
+            res.status(200).send(true);
+        }else{
+            res.status(404).send("Usuário não está presente no banco")
+        }
+    } catch(e){
+        res.status(401).send('Erro de conexão');
+    }  
+})
+
+const cadastrar_codigo = async (token, id) => {
+
+    console.log("Tentativa de criação de código");
+    console.log(id);
+    console.log(token);
+    
+    try {
+        const date = new Date();
+        const dateVenc = new Date(date.getTime() + 10 * 60000); // Adiciona 10 minutos
+        const vencimentoFormatado = `${dateVenc.getFullYear()}-${dateVenc.getMonth() + 1}-${dateVenc.getDate()} ${dateVenc.getHours()}:${dateVenc.getMinutes()}:${dateVenc.getSeconds()}`;
+
+        await Codigo.create({
+            idUsuario: id,
+            vencimentoToken: vencimentoFormatado,
+            token: token
+        });
+    } catch (e) {
+        console.error(e);
+    }
+}
 
 
 servidor.listen(PORT,HOST,()=>{
