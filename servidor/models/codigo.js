@@ -5,11 +5,8 @@ const codigo = dataBase.define('codigo',{
     idUsuario:{
         type: Sequelize.STRING
     },
-    dataSolic:{
-        type: Sequelize.STRING
-    },
     vencimentoToken:{
-        type: Sequelize.STRING
+        type: Sequelize.DATE
     },
     token:{
         type: Sequelize.STRING
