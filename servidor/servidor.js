@@ -8,8 +8,8 @@ const transporter = nodemailer.createTransport({
     port: 587,
     secure: false,
     auth: {
-        user: "luismarinho501@gmail.com",
-        pass: "emhp uhjl yswh powi"
+        user: "guardeagua.embrapa@gmail.com",
+        pass: "p r p r x w y x k u g g v o a z"
     }
 })
 
@@ -151,7 +151,7 @@ servidor.post("/recuperar_senha", async function(req, res) {
         if (user) {
             const codigo_verificacao = Math.floor(Math.random() * (99999 - 10000 + 1)) + 10000; // Gera um código numérico aleatório de 5 algarismos
             const configEmail = {
-                from: "luismarinho501@gmail.com",
+                from: "guardeagua.embrapa@gmail.com",
                 to: req.body.email,
                 subject: "Recuperação de senha",
                 html: `<p>Seu código de recuperação de senha é ${codigo_verificacao}</p>`
@@ -202,10 +202,13 @@ const cadastrar_codigo = async (token, id) => {
             const tempo_atual = new Date()
 
             if(codigo_enviado != null && tempo_atual.getTime() < codigo_enviado.vencimentoToken.getTime()){
-                res.status(200).send('codigo')
+                console.log("codigo verificado!")
+                res.status(200).send(true)
+                
             }
             else{
                 res.status(404).send('o tempo expirou')
+                console.log('deu merda')
             }
         }catch{
             res.status(401).send('falha de conexão com o banco ou o código não existe')
@@ -222,7 +225,8 @@ const cadastrar_codigo = async (token, id) => {
             if(conta != null){
                 conta.senha = nova_hashePassowrd
                 conta.save()
-                res.status(200).send('senha alterada com sucesso')
+                console.log("Senha alterada!")
+                res.status(200).send(true)
             }
             else{
                 res.status(404).send('usuário não encontrado')
